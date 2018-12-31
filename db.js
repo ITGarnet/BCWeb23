@@ -27,4 +27,4 @@ function handleDisconnect() {
 
 handleDisconnect();
 
-module.exports = conecction;
+module.exports = connection;

@@ -1,13 +1,14 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const { save_user_information } = require("./models/server_db");
 
 const port = 3000;
 
 /* handling all the parsing */
 app.use(bodyParser.json());
 
-app.post("/", (req, res) => {
+app.post("/", async (req, res) => {
   var email = req.body.email;
   var amount = req.body.amount;
 
@@ -18,7 +19,8 @@ app.post("/", (req, res) => {
     return res.send(return_info);
   }
 
-  res.send({ amount: amount, email: email });
+  const result = await save_user_information({ amount: amount, email: email });
+  res.send(result);
 });
 
 app.listen(port, () => {
