@@ -1,0 +1,22 @@
+{
+  "name": "bcweb23",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ITGarnet/BCWeb23.git"
+  },
+  "author": "Tziki",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ITGarnet/BCWeb23/issues"
+  },
+  "homepage": "https://github.com/ITGarnet/BCWeb23#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}
