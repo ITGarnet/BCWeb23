@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const { save_user_information } = require("./models/server_db");
+const {
+  save_user_information,
+  get_total_amount
+} = require("./models/server_db");
 
 const port = 3000;
 
@@ -20,6 +23,11 @@ app.post("/", async (req, res) => {
   }
 
   const result = await save_user_information({ amount: amount, email: email });
+  res.send(result);
+});
+
+app.get("/get_total_amount", async (req, res) => {
+  const result = await get_total_amount();
   res.send(result);
 });
 
