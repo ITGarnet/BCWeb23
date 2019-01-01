@@ -5,11 +5,14 @@ const {
   save_user_information,
   get_total_amount
 } = require("./models/server_db");
+const path = require("path");
+const publicPath = path.join(__dirname, "./public");
 
 const port = 3000;
 
 /* handling all the parsing */
 app.use(bodyParser.json());
+app.use(express.static(publicPath));
 
 app.post("/", async (req, res) => {
   var email = req.body.email;
