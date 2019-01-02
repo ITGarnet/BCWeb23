@@ -7,12 +7,22 @@ const {
 } = require("./models/server_db");
 const path = require("path");
 const publicPath = path.join(__dirname, "./public");
+const paypal = require("paypal-rest-sdk");
 
 const port = 3000;
 
 /* handling all the parsing */
 app.use(bodyParser.json());
 app.use(express.static(publicPath));
+
+/* paypal configuration */
+paypal.configure({
+  mode: "sandbox", // snadbox or live
+  client_id:
+    "AQenuaezZphXYLNtR2evi5Yb9kYoVb76UJwlctPeq6-63qOghzTyzAnfYMwtEhwkT6bE47shpPC-pQnM",
+  client_secret:
+    "EFYeBRdwxerYuLO46JCR3ny-WQA06qWPtFL0DOBq85T8rjOla23upA28l13RPBlEUE0r4dUN4Eg260w0"
+});
 
 app.post("/post_info", async (req, res) => {
   var email = req.body.email;
