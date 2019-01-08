@@ -8,8 +8,18 @@ const {
 const path = require("path");
 const publicPath = path.join(__dirname, "./public");
 const paypal = require("paypal-rest-sdk");
+const session = require("express-session");
 
 const port = 3000;
+
+app.use(
+  session({
+    secret: "my web app",
+    cookie: { maxAge: 6000 },
+    saveUninitialized: true,
+    resave: true
+  })
+);
 
 /* handling all the parsing */
 app.use(bodyParser.json());
@@ -19,10 +29,8 @@ app.use(express.static(publicPath));
 paypal.configure({
   mode: "sandbox", // snadbox or live
   client_id:
-    //"Ad6paVM8EnxH7ecp9VO3e0CALZfC3B9yQhPHaneNgV3ulQEcVTYO2hdPoTEI0rYcpTzM6_4U1u7k73p-",
     "AQenuaezZphXYLNtR2evi5Yb9kYoVb76UJwlctPeq6-63qOghzTyzAnfYMwtEhwkT6bE47shpPC-pQnM",
   client_secret:
-    //"ENsIYnn63D6o1TXCwEJr5RFbvlCA6mO-mKRE9WRGj6t0TQlz6tEFfmfBd16biOszRZHAZbjAhGHTTAdJ"
     "EFYeBRdwxerYuLO46JCR3ny-WQA06qWPtFL0DOBq85T8rjOla23upA28l13RPBlEUE0r4dUN4Eg260w0"
 });
 
@@ -37,7 +45,13 @@ app.post("/post_info", async (req, res) => {
     return res.send(return_info);
   }
 
-  const result = await save_user_information({ amount: amount, email: email });
+  let fee_amount = amount * 0.9;
+  // here we save to the database
+  const result = await save_user_information({
+    amount: fee_amount,
+    email: email
+  });
+  req.session.paypal_amount = amount;
 
   var create_payment_json = {
     intent: "sale",
@@ -67,7 +81,6 @@ app.post("/post_info", async (req, res) => {
         },
         payee: {
           email: "lotterymng@lotteryapp.com"
-          //email: "tzikibusiness@gmail.com"
         },
         description: "Lottery perchase"
       }
@@ -101,7 +114,7 @@ app.get("/success", (req, res) => {
       {
         amount: {
           currency: "USD",
-          total: 100
+          total: req.session.paypal_amount
         }
       }
     ]
