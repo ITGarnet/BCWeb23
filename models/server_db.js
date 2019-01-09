@@ -8,7 +8,7 @@ save_user_information = data =>
       fields
     ) {
       if (err) {
-        reject("could not insert into lottery information");
+        reject("Could not insert into lottery information");
       }
       resolve("Succesful");
     });
@@ -21,14 +21,29 @@ get_total_amount = data =>
       null,
       function(err, results, fields) {
         if (err) {
-          reject("could not get total amount");
+          reject("Could not get total amount");
         }
         resolve(results);
       }
     );
   });
 
+get_list_of_participants = data =>
+  new Promise((resolve, reject) => {
+    db.query("select email from lottery_information", null, function(
+      err,
+      results,
+      fields
+    ) {
+      if (err) {
+        reject("Could not fetch list of participants");
+      }
+      resolve(results);
+    });
+  });
+
 module.exports = {
   save_user_information,
+  get_list_of_participants,
   get_total_amount
 };

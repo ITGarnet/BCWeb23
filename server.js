@@ -3,6 +3,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const {
   save_user_information,
+  get_list_of_participants,
   get_total_amount
 } = require("./models/server_db");
 const path = require("path");
@@ -147,6 +148,15 @@ app.get("/pick_winner", async (req, res) => {
   /* Placeholder for picking the winner,
   1) We need to write a query to get a list of alll the participants
   2) we need to pick a winner */
+  let list_of_participants = await get_list_of_participants();
+  list_of_participants = JSON.parse(JSON.stringify(list_of_participants));
+  let email_array = [];
+  list_of_participants.forEach(element => {
+    email_array.push(element.email);
+  });
+  let winner = email_array[Math.floor(Math.random() * email_array.length)];
+  console.log(winner);
+  return true;
 
   /* Create paypal payment */
   var create_payment_json = {
@@ -182,6 +192,22 @@ app.get("/pick_winner", async (req, res) => {
       }
     ]
   };
+
+  paypal.payment.create(create_payment_json, function(error, payment) {
+    if (error) {
+      throw error;
+    } else {
+      console.log("Create Payment Response");
+      console.log(payment);
+      for (let i = 0; i < payment.links.length; i++) {
+        if (payment.links[i].rel == "approval_url") {
+          console.log(i);
+          return res.send(payment.links[i].href);
+          //res.redirect(payment.links[i].href);
+        }
+      }
+    }
+  });
 });
 
 app.listen(port, () => {
