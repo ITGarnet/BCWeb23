@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const {
   save_user_information,
   get_list_of_participants,
+  delete_users,
   get_total_amount
 } = require("./models/server_db");
 const path = require("path");
@@ -133,10 +134,10 @@ app.get("/success", async (req, res) => {
     }
   });
   /* delete all mysql users */
-  if(req.session.winner_picked) {
+  if (req.session.winner_picked) {
     let deleted = await delete_users();
   }
-  req.session.winner_picked = false;git status
+  req.session.winner_picked = false;
   res.redirect("http://localhost:3000");
 });
 
