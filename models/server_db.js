@@ -52,7 +52,7 @@ delete_users = data =>
       if (err) {
         reject("Could not dlete all users");
       }
-      results("Successfuly deleted all users");
+      resolve("Successfuly deleted all users");
     });
   });
 

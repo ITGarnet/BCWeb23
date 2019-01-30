@@ -10,6 +10,7 @@ const {
 const path = require("path");
 const publicPath = path.join(__dirname, "./public");
 const paypal = require("paypal-rest-sdk");
+/*
 const session = require("express-session");
 
 const port = 3000;
@@ -22,11 +23,16 @@ app.use(
     resave: true
   })
 );
+*/
+/*Globle variables since the session is not working with Payapl redirects */
+let gPayPalAmount = 0;
+let gTotalAmount = 0;
+let gWinnerPicked = false;
 
 /* handling all the parsing */
 app.use(bodyParser.json());
 app.use(express.static(publicPath));
-
+const port = 3000;
 /* paypal configuration */
 paypal.configure({
   mode: "sandbox", // snadbox or live
@@ -38,7 +44,7 @@ paypal.configure({
 
 app.post("/post_info", async (req, res) => {
   var email = req.body.email;
-  var amount = req.body.amount;
+  gPayPalAmount = req.body.amount;
 
   if (amount <= 1) {
     return_info = {};
@@ -47,13 +53,13 @@ app.post("/post_info", async (req, res) => {
     return res.send(return_info);
   }
 
-  let fee_amount = amount * 0.9;
+  let fee_amount = gPayPalAmount * 0.9;
   // here we save to the database
   const result = await save_user_information({
     amount: fee_amount,
     email: email
   });
-  req.session.paypal_amount = amount;
+  //req.session.paypal_amount = amount;
 
   var create_payment_json = {
     intent: "sale",
@@ -71,7 +77,7 @@ app.post("/post_info", async (req, res) => {
             {
               name: "Lottery",
               sku: "Funding",
-              price: amount,
+              price: gPayPalAmount,
               currency: "USD",
               quantity: 1
             }
@@ -79,7 +85,7 @@ app.post("/post_info", async (req, res) => {
         },
         amount: {
           currency: "USD",
-          total: amount
+          total: gPayPalAmount
         },
         payee: {
           email: "lotterymng@lotteryapp.com"
@@ -116,7 +122,7 @@ app.get("/success", async (req, res) => {
       {
         amount: {
           currency: "USD",
-          total: req.session.paypal_amount
+          total: gPayPalAmount
         }
       }
     ]
@@ -134,10 +140,10 @@ app.get("/success", async (req, res) => {
     }
   });
   /* delete all mysql users */
-  if (req.session.winner_picked) {
+  if (gWinnerPicked) {
     let deleted = await delete_users();
   }
-  req.session.winner_picked = false;
+  gWinnerPicked = false;
   res.redirect("http://localhost:3000");
 });
 
@@ -146,10 +152,12 @@ app.get("/get_total_amount", async (req, res) => {
   res.send(result);
 });
 
+// the function is async since we need to comunicate with the database
 app.get("/pick_winner", async (req, res) => {
   const result = await get_total_amount();
   let total_amount = result[0].total_amount;
-  req.session.paypal_amount = total_amount;
+
+  gTotalAmount = total_amount;
 
   /* Placeholder for picking the winner,
   1) We need to write a query to get a list of alll the participants
@@ -162,8 +170,9 @@ app.get("/pick_winner", async (req, res) => {
   });
   let winner_email =
     email_array[Math.floor(Math.random() * email_array.length)];
-  req.session.winner_picked = true;
-  /* Create paypal payment */
+  gwWinnerPicked = true;
+  /* In order to pick up the winner we need to pay for it. That is why we will 
+    Create paypal payment */
   var create_payment_json = {
     intent: "sale",
     payer: {
@@ -180,7 +189,7 @@ app.get("/pick_winner", async (req, res) => {
             {
               name: "Lottery",
               sku: "Funding",
-              price: req.session.paypal_amount,
+              price: gTotalAmount,
               currency: "USD",
               quantity: 1
             }
@@ -188,7 +197,7 @@ app.get("/pick_winner", async (req, res) => {
         },
         amount: {
           currency: "USD",
-          total: req.session.paypal_amount
+          total: gTotalAmount
         },
         payee: {
           email: winner_email
