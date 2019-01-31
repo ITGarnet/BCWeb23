@@ -26,7 +26,7 @@ app.use(
 */
 /*Globle variables since the session is not working with Payapl redirects */
 let gPayPalAmount = 0;
-let gTotalAmount = 0;
+//let gTotalAmount = 0;
 let gWinnerPicked = false;
 
 /* handling all the parsing */
@@ -45,8 +45,9 @@ paypal.configure({
 app.post("/post_info", async (req, res) => {
   var email = req.body.email;
   gPayPalAmount = req.body.amount;
-
-  if (amount <= 1) {
+  console.log("In POST_Info ");
+  console.log(gPayPalAmount);
+  if (gPayPalAmount <= 1) {
     return_info = {};
     return_info.error = true;
     return_info.message = "The amount should be greater than 1";
@@ -157,8 +158,11 @@ app.get("/pick_winner", async (req, res) => {
   const result = await get_total_amount();
   let total_amount = result[0].total_amount;
 
-  gTotalAmount = total_amount;
-
+  //gTotalAmount = total_amount;
+  // In this case is the total amount
+  gPayPalAmount = total_amount;
+  console.log("In pick_winner function ...");
+  console.log(gPayPalAmount);
   /* Placeholder for picking the winner,
   1) We need to write a query to get a list of alll the participants
   2) we need to pick a winner */
@@ -170,7 +174,7 @@ app.get("/pick_winner", async (req, res) => {
   });
   let winner_email =
     email_array[Math.floor(Math.random() * email_array.length)];
-  gwWinnerPicked = true;
+  gWinnerPicked = true;
   /* In order to pick up the winner we need to pay for it. That is why we will 
     Create paypal payment */
   var create_payment_json = {
@@ -189,7 +193,7 @@ app.get("/pick_winner", async (req, res) => {
             {
               name: "Lottery",
               sku: "Funding",
-              price: gTotalAmount,
+              price: gPayPalAmount,
               currency: "USD",
               quantity: 1
             }
@@ -197,7 +201,7 @@ app.get("/pick_winner", async (req, res) => {
         },
         amount: {
           currency: "USD",
-          total: gTotalAmount
+          total: gPayPalAmount
         },
         payee: {
           email: winner_email
@@ -216,8 +220,8 @@ app.get("/pick_winner", async (req, res) => {
       for (let i = 0; i < payment.links.length; i++) {
         if (payment.links[i].rel == "approval_url") {
           console.log(i);
-          return res.send(payment.links[i].href);
-          //res.redirect(payment.links[i].href);
+          //return res.send(payment.links[i].href);
+          return res.redirect(payment.links[i].href);
         }
       }
     }

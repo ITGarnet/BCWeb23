@@ -43,7 +43,7 @@ get_list_of_participants = data =>
   });
 
 delete_users = data =>
-  Promise((resolve, reject) => {
+  new Promise((resolve, reject) => {
     db.query("delete from lottery_information where ID > 0", null, function(
       err,
       results,
